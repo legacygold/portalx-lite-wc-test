@@ -1,0 +1,17 @@
+[
+  {
+    "asset_code": "AFR",
+    "issuer": "GBX6YI45VU7WNAAKA3RBFDR3I3UKNFHTJPQ5F6KOOKSGYIAM4TRQN54W",
+    "type": "alphanum4"
+  },
+  {
+    "asset_code": "USDC",
+    "issuer": "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
+    "type": "alphanum4"
+  },
+  {
+    "asset_code": "XLM",
+    "issuer": "native",
+    "type": "native"
+  }
+]

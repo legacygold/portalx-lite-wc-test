@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PortalX LITE Test Project</title>
+
+  <!-- SheetJS for XLSX export -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="title">
+      <span class="portal">PortalX</span><span class="x"> X</span> <span class="lite">LITE Test Project</span>
+    </div>
+    <div class="header-controls">
+      <img id="walletIcon" src="/assets/wallet-icon.png" alt="wallet" class="icon" title="Connect wallet" />
+      <button id="connectBtn" class="btn">Connect Wallet</button>
+      <input id="importFile" type="file" accept=".json" style="display:none" />
+      <button id="importBtn" class="btn">Import JSON</button>
+      <button id="updateBtn" class="btn">Update Offers</button>
+      <button id="exportJsonBtn" class="btn">Export JSON</button>
+      <button id="exportXlsxBtn" class="btn">Export XLSX</button>
+    </div>
+  </header>
+
+  <main class="main">
+    <!-- Active offers (immediately under header) -->
+    <section id="activeOffers" class="panel">
+      <h3>Active Offers (from Horizon)</h3>
+      <div id="offersContainer" class="cards"></div>
+      <div id="offersMsg" class="muted small">Click <em>Update Offers</em> to fetch active offers.</div>
+    </section>
+
+    <!-- Order Controls -->
+    <section class="panel">
+      <div class="segmented">
+        <button class="seg-btn active" data-target="buy">Buy</button>
+        <button class="seg-btn" data-target="sell">Sell</button>
+        <button class="seg-btn" data-target="swap">Swap</button>
+      </div>
+
+      <div id="buy" class="order-container active">
+        <h4>Place Buy Order</h4>
+        <label>Market
+          <select id="buyMarket"></select>
+        </label>
+        <label>Price (Quote in Base, 7 dec)
+          <input id="buyPrice" type="number" step="0.0000001" />
+        </label>
+        <label>Base Total (fixed)
+          <input id="buyBaseTotal" type="number" step="0.0000001" />
+        </label>
+        <div class="calc">Estimated Quote to receive: <span id="buyEstimatedQuote">—</span></div>
+        <button id="placeBuyBtn" class="btn primary">Place Buy Order</button>
+      </div>
+
+      <div id="sell" class="order-container">
+        <h4>Place Sell Order</h4>
+        <label>Market
+          <select id="sellMarket"></select>
+        </label>
+        <label>Price (Quote in Base, 7 dec)
+          <input id="sellPrice" type="number" step="0.0000001" />
+        </label>
+        <label>Quote Amount (fixed)
+          <input id="sellQuoteAmount" type="number" step="0.0000001" />
+        </label>
+        <div class="calc">Estimated Base to receive: <span id="sellEstimatedBase">—</span></div>
+        <button id="placeSellBtn" class="btn primary">Place Sell Order</button>
+      </div>
+
+      <div id="swap" class="order-container">
+        <h4>Swap (path payment estimate)</h4>
+        <label>From Asset
+          <select id="swapFrom"></select>
+        </label>
+        <label>To Asset
+          <select id="swapTo"></select>
+        </label>
+        <label>Amount (from asset)
+          <input id="swapAmount" type="number" step="0.0000001" />
+        </label>
+        <label>Slippage
+          <select id="swapSlippage">
+            <option>0.1%</option>
+            <option>0.5%</option>
+            <option>1%</option>
+          </select>
+        </label>
+        <div class="calc">Estimated received: <span id="swapEstimate">—</span></div>
+        <button id="placeSwapBtn" class="btn primary">Place Swap</button>
+      </div>
+    </section>
+
+    <!-- Local Stored Logs (appear after order entry) -->
+    <section id="storedLogs" class="panel">
+      <h3>Stored Order Log</h3>
+      <div id="logContainer" class="cards"></div>
+      <div id="logEmpty" class="muted small">No logs yet. Place orders or import JSON.</div>
+    </section>
+
+    <footer class="statusbar">
+      <div id="status">Status: idle</div>
+    </footer>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

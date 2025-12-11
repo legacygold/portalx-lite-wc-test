@@ -1,0 +1,17 @@
+[
+  {
+    "market": "AFR/USDC",
+    "base": "USDC",
+    "quote": "AFR"
+  },
+  {
+    "market": "AFR/XLM",
+    "base": "XLM",
+    "quote": "AFR"
+  },
+  {
+    "market": "XLM/USDC",
+    "base": "USDC",
+    "quote": "XLM"
+  }
+]

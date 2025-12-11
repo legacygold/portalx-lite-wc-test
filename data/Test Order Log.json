@@ -1,0 +1,18 @@
+{
+  "timestamp": "",
+  "type": "",
+  "market": "",
+  
+  "base_total": "",
+  "quote_amount": "",
+  "price": "",
+  
+  "swap_from": "",
+  "swap_to": "",
+  "swap_amount": "",
+  "swap_estimated_receive": "", 
+  
+  "offer_id": "",
+  "tx_hash": ""
+}
+
