@@ -13,16 +13,11 @@
 <body>
   <header class="topbar">
     <div class="title">
-      <span class="portal">PortalX</span><span class="x"> X</span> <span class="lite">LITE Test Project</span>
+      <span class="portal">Portal</span><span class="x">X</span> <span class="lite">LITE Test Project</span>
     </div>
-    <div class="header-controls">
-      <img id="walletIcon" src="/assets/wallet-icon.png" alt="wallet" class="icon" title="Connect wallet" />
-      <button id="connectBtn" class="btn">Connect Wallet</button>
-      <input id="importFile" type="file" accept=".json" style="display:none" />
-      <button id="importBtn" class="btn">Import JSON</button>
-      <button id="updateBtn" class="btn">Update Offers</button>
-      <button id="exportJsonBtn" class="btn">Export JSON</button>
-      <button id="exportXlsxBtn" class="btn">Export XLSX</button>
+    <div id="walletArea">
+        <img id="walletButton" src="assets/wallet-icon.png" alt="connect wallet">
+        <span id="walletStatus">Not Connected</span>
     </div>
   </header>
 
@@ -106,7 +101,7 @@
       <div id="status">Status: idle</div>
     </footer>
   </main>
-
+  <script src="https://cdn.jsdelivr.net/npm/@creit-tech/stellar-wallets-kit@latest/dist/index.umd.min.js"></script>
   <script type="module" src="app.js"></script>
 </body>
 </html>
