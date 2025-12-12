@@ -5,103 +5,494 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>PortalX LITE Test Project</title>
 
-  <!-- SheetJS for XLSX export -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
 
-  <link rel="stylesheet" href="style.css" />
+  <!-- Optional: SheetJS for XLSX export (CDN) -->
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
-  <header class="topbar">
-    <div class="title">
-      <span class="portal">Portal</span><span class="x">X</span> <span class="lite">LITE Test Project</span>
+  <!-- HEADER -->
+  <header class="px-header">
+    <div class="px-header-left">
+      <button id="importBtn" class="btn ghost" title="Import JSON">
+        Import
+        <input id="importFile" type="file" accept="application/json" style="display:none">
+      </button>
     </div>
-    <div id="walletArea">
-        <img id="walletButton" src="assets/wallet-icon.png" alt="connect wallet">
-        <span id="walletStatus">Not Connected</span>
+
+    <div class="px-title">
+      <span class="px-portal">Portal</span><span class="px-x">X</span>
+      <span class="px-lite"> LITE Test Project</span>
+    </div>
+
+    <div class="px-header-right">
+      <button id="walletBtn" class="wallet-btn" title="Connect Wallet">
+        <img src="assets/wallet-icon.png" alt="wallet" id="walletIcon">
+      </button>
     </div>
   </header>
 
-  <main class="main">
-    <!-- Active offers (immediately under header) -->
-    <section id="activeOffers" class="panel">
-      <h3>Active Offers (from Horizon)</h3>
-      <div id="offersContainer" class="cards"></div>
-      <div id="offersMsg" class="muted small">Click <em>Update Offers</em> to fetch active offers.</div>
+  <!-- Gold separator line -->
+  <div class="separator"></div>
+
+  <!-- MAIN APP -->
+  <main class="container">
+
+    <!-- Active Offers / Update -->
+    <section class="card" id="activeOffersSection">
+      <div class="section-head">
+        <h2>Active Offers</h2>
+        <button id="updateOffersBtn" class="btn small">Update Offers</button>
+      </div>
+
+      <div id="activeOffers" class="list">
+        <!-- populated from network or local store -->
+        <div class="empty-note">No active offers yet. Connect wallet and import or create orders.</div>
+      </div>
     </section>
 
-    <!-- Order Controls -->
-    <section class="panel">
-      <div class="segmented">
-        <button class="seg-btn active" data-target="buy">Buy</button>
-        <button class="seg-btn" data-target="sell">Sell</button>
-        <button class="seg-btn" data-target="swap">Swap</button>
+    <!-- Market selector + Buy/Sell/Swap controls -->
+    <section class="card" id="tradeSection">
+      <div class="section-head">
+        <h2>New Action</h2>
       </div>
 
-      <div id="buy" class="order-container active">
-        <h4>Place Buy Order</h4>
-        <label>Market
-          <select id="buyMarket"></select>
-        </label>
-        <label>Price (Quote in Base, 7 dec)
-          <input id="buyPrice" type="number" step="0.0000001" />
-        </label>
-        <label>Base Total (fixed)
-          <input id="buyBaseTotal" type="number" step="0.0000001" />
-        </label>
-        <div class="calc">Estimated Quote to receive: <span id="buyEstimatedQuote">—</span></div>
-        <button id="placeBuyBtn" class="btn primary">Place Buy Order</button>
+      <div class="form-row">
+        <label for="marketSelect">Select Market</label>
+        <select id="marketSelect">
+          <option value="">— Select Market —</option>
+          <!-- populated from /data/Test BaseQuote.json -->
+        </select>
       </div>
 
-      <div id="sell" class="order-container">
-        <h4>Place Sell Order</h4>
-        <label>Market
-          <select id="sellMarket"></select>
-        </label>
-        <label>Price (Quote in Base, 7 dec)
-          <input id="sellPrice" type="number" step="0.0000001" />
-        </label>
-        <label>Quote Amount (fixed)
-          <input id="sellQuoteAmount" type="number" step="0.0000001" />
-        </label>
-        <div class="calc">Estimated Base to receive: <span id="sellEstimatedBase">—</span></div>
-        <button id="placeSellBtn" class="btn primary">Place Sell Order</button>
+      <div class="btn-row">
+        <button id="buyBtn" class="btn">Buy</button>
+        <button id="sellBtn" class="btn">Sell</button>
+        <button id="swapBtn" class="btn">Swap</button>
       </div>
 
-      <div id="swap" class="order-container">
-        <h4>Swap (path payment estimate)</h4>
-        <label>From Asset
+      <!-- ORDER FORMS -->
+      <div id="buyForm" class="order-form hidden">
+        <h3>Buy (using Base total)</h3>
+        <div class="form-row">
+          <label>Market</label>
+          <div id="buyMarketLabel" class="mono">—</div>
+        </div>
+        <div class="form-row">
+          <label>Base Total (fixed)</label>
+          <input id="buyBaseTotal" type="number" step="0.0000001" placeholder="0.0">
+        </div>
+        <div class="form-row">
+          <label>Price (Quote in Base)</label>
+          <input id="buyPrice" type="number" step="0.0000001" placeholder="0.0">
+        </div>
+        <div class="form-row">
+          <label>Quote Amount to Receive (auto)</label>
+          <div id="buyQuoteReceive" class="mono">—</div>
+        </div>
+        <div class="form-row">
+          <button id="buySubmit" class="btn primary">Submit Buy Order</button>
+        </div>
+      </div>
+
+      <div id="sellForm" class="order-form hidden">
+        <h3>Sell (fixed Quote amount)</h3>
+        <div class="form-row">
+          <label>Market</label>
+          <div id="sellMarketLabel" class="mono">—</div>
+        </div>
+        <div class="form-row">
+          <label>Sell Amount (Quote, fixed)</label>
+          <input id="sellQuoteAmount" type="number" step="0.0000001" placeholder="0.0">
+        </div>
+        <div class="form-row">
+          <label>Price (Quote in Base)</label>
+          <input id="sellPrice" type="number" step="0.0000001" placeholder="0.0">
+        </div>
+        <div class="form-row">
+          <label>Base Total to Receive (auto)</label>
+          <div id="sellBaseReceive" class="mono">—</div>
+        </div>
+        <div class="form-row">
+          <button id="sellSubmit" class="btn primary">Submit Sell Order</button>
+        </div>
+      </div>
+
+      <div id="swapForm" class="order-form hidden">
+        <h3>Swap</h3>
+        <div class="form-row">
+          <label>From (asset)</label>
           <select id="swapFrom"></select>
-        </label>
-        <label>To Asset
+        </div>
+        <div class="form-row">
+          <label>To (asset)</label>
           <select id="swapTo"></select>
-        </label>
-        <label>Amount (from asset)
-          <input id="swapAmount" type="number" step="0.0000001" />
-        </label>
-        <label>Slippage
-          <select id="swapSlippage">
-            <option>0.1%</option>
-            <option>0.5%</option>
-            <option>1%</option>
-          </select>
-        </label>
-        <div class="calc">Estimated received: <span id="swapEstimate">—</span></div>
-        <button id="placeSwapBtn" class="btn primary">Place Swap</button>
+        </div>
+        <div class="form-row">
+          <label>Amount (from)</label>
+          <input id="swapAmount" type="number" step="0.0000001" placeholder="0.0">
+        </div>
+        <div class="form-row">
+          <label>Estimated To Receive</label>
+          <div id="swapEstimate" class="mono">—</div>
+        </div>
+        <div class="form-row">
+          <button id="swapSubmit" class="btn primary">Submit Swap</button>
+        </div>
       </div>
     </section>
 
-    <!-- Local Stored Logs (appear after order entry) -->
-    <section id="storedLogs" class="panel">
-      <h3>Stored Order Log</h3>
-      <div id="logContainer" class="cards"></div>
-      <div id="logEmpty" class="muted small">No logs yet. Place orders or import JSON.</div>
+    <!-- Stored Order Log -->
+    <section class="card" id="storedLogSection">
+      <div class="section-head">
+        <h2>Stored Order Log</h2>
+      </div>
+
+      <div id="orderLog" class="list">
+        <div class="empty-note">No logged orders yet.</div>
+      </div>
+
+      <div class="export-row hidden" id="exportRow">
+        <button id="exportJsonBtn" class="btn">Export JSON</button>
+        <button id="exportXlsxBtn" class="btn">Export XLSX</button>
+      </div>
     </section>
 
-    <footer class="statusbar">
-      <div id="status">Status: idle</div>
-    </footer>
   </main>
-  <script src="https://cdn.jsdelivr.net/npm/@creit-tech/stellar-wallets-kit@latest/dist/index.umd.min.js"></script>
-  <script type="module" src="app.js"></script>
+
+  <!-- FOOTER / small note -->
+  <footer class="footer">
+    <small>PortalX LITE Test Project — wallet / Lobstr via WalletConnect. Test only.</small>
+  </footer>
+
+  <!-- App logic (self-contained) -->
+  <script>
+    /* ---------------------------
+       Simple in-page app logic
+       - dynamic labels
+       - import/export
+       - add orders to local store
+       - placeholder hooks for StellarWalletsKit
+       --------------------------- */
+
+    // Local state
+    const baseQuoteUrl = '/data/Test BaseQuote.json';
+    const assetsUrl = '/data/Test Universal Asset List.json';
+    const orders = []; // in-memory store for test project
+
+    // DOM refs
+    const marketSelect = document.getElementById('marketSelect');
+    const swapFrom = document.getElementById('swapFrom');
+    const swapTo = document.getElementById('swapTo');
+    const activeOffers = document.getElementById('activeOffers');
+    const orderLog = document.getElementById('orderLog');
+    const exportRow = document.getElementById('exportRow');
+
+    // Forms & inputs
+    const buyBtn = document.getElementById('buyBtn');
+    const sellBtn = document.getElementById('sellBtn');
+    const swapBtn = document.getElementById('swapBtn');
+
+    const buyForm = document.getElementById('buyForm');
+    const sellForm = document.getElementById('sellForm');
+    const swapForm = document.getElementById('swapForm');
+
+    const buyBaseTotal = document.getElementById('buyBaseTotal');
+    const buyPrice = document.getElementById('buyPrice');
+    const buyQuoteReceive = document.getElementById('buyQuoteReceive');
+    const buyMarketLabel = document.getElementById('buyMarketLabel');
+
+    const sellQuoteAmount = document.getElementById('sellQuoteAmount');
+    const sellPrice = document.getElementById('sellPrice');
+    const sellBaseReceive = document.getElementById('sellBaseReceive');
+    const sellMarketLabel = document.getElementById('sellMarketLabel');
+
+    const swapAmount = document.getElementById('swapAmount');
+    const swapEstimate = document.getElementById('swapEstimate');
+
+    // file import
+    const importBtn = document.getElementById('importBtn');
+    const importFile = document.getElementById('importFile');
+
+    // export
+    const exportJsonBtn = document.getElementById('exportJsonBtn');
+    const exportXlsxBtn = document.getElementById('exportXlsxBtn');
+
+    // wallet
+    const walletBtn = document.getElementById('walletBtn');
+    const walletIcon = document.getElementById('walletIcon');
+
+    // initialize UI
+    function hideAllForms() {
+      buyForm.classList.add('hidden');
+      sellForm.classList.add('hidden');
+      swapForm.classList.add('hidden');
+    }
+    hideAllForms();
+
+    // load base/quote markets from JSON
+    async function loadMarkets() {
+      try {
+        const res = await fetch(baseQuoteUrl);
+        const j = await res.json();
+        // Expecting data in luckysheet-like structure: look for celldata items to extract market column 0 rows >0
+        const options = [{ value: '', text: '— Select Market —' }];
+        if (Array.isArray(j) && j[0]?.celldata) {
+          const rows = j[0].celldata;
+          const markets = rows.filter(c => c.r > 0 && c.c === 0).map(c => c.v?.v || c.v?.m);
+          markets.forEach(m => options.push({ value: m, text: m }));
+        }
+        // populate select
+        marketSelect.innerHTML = options.map(o => `<option value="${o.value}">${o.text}</option>`).join('');
+      } catch (e) {
+        console.warn('Could not load markets', e);
+      }
+    }
+
+    // load assets for swap dropdowns
+    async function loadAssets() {
+      try {
+        const res = await fetch(assetsUrl);
+        const j = await res.json();
+        const options = [{ value: '', text: '— Select Asset —' }];
+        if (Array.isArray(j) && j[0]?.celldata) {
+          // extract column 0 values (asset codes)
+          const rows = j[0].celldata;
+          const codes = rows.filter(c => c.c === 0 && c.r > 0).map(c => c.v?.v || c.v?.m);
+          codes.forEach(code => options.push({ value: code, text: code }));
+        }
+        swapFrom.innerHTML = options.map(o => `<option value="${o.value}">${o.text}</option>`).join('');
+        swapTo.innerHTML = options.map(o => `<option value="${o.value}">${o.text}</option>`).join('');
+      } catch (e) {
+        console.warn('Could not load assets', e);
+      }
+    }
+
+    // helper: parse selected market and return {base, quote}
+    function parseMarket(marketStr) {
+      // expecting "QUOTE/BASE" in the Test BaseQuote
+      if (!marketStr) return { quote: null, base: null };
+      const parts = marketStr.split('/');
+      if (parts.length === 2) {
+        return { quote: parts[0].trim(), base: parts[1].trim() };
+      }
+      return { quote: null, base: null };
+    }
+
+    // when market changes -> update dynamic labels
+    marketSelect.addEventListener('change', () => {
+      const val = marketSelect.value;
+      const parsed = parseMarket(val);
+      buyMarketLabel.textContent = val || '—';
+      sellMarketLabel.textContent = val || '—';
+      // Update labels inside forms to show codes if desired (we use market label text)
+    });
+
+    // UI button handlers
+    buyBtn.addEventListener('click', () => {
+      hideAllForms(); buyForm.classList.remove('hidden');
+    });
+    sellBtn.addEventListener('click', () => {
+      hideAllForms(); sellForm.classList.remove('hidden');
+    });
+    swapBtn.addEventListener('click', () => {
+      hideAllForms(); swapForm.classList.remove('hidden');
+    });
+
+    // basic auto-calc for buy/sell
+    function safeNum(v){ const n = parseFloat(v); return isNaN(n) ? 0 : n; }
+    buyBaseTotal.addEventListener('input', () => {
+      const total = safeNum(buyBaseTotal.value);
+      const price = safeNum(buyPrice.value);
+      const quoteAmt = price > 0 ? (total / price) : 0;
+      buyQuoteReceive.textContent = (quoteAmt>0) ? quoteAmt.toFixed(7) : '—';
+    });
+    buyPrice.addEventListener('input', () => buyBaseTotal.dispatchEvent(new Event('input')));
+
+    sellQuoteAmount.addEventListener('input', () => {
+      const q = safeNum(sellQuoteAmount.value);
+      const price = safeNum(sellPrice.value);
+      const baseTotal = price > 0 ? (q / price) : 0;
+      sellBaseReceive.textContent = (baseTotal>0) ? baseTotal.toFixed(7) : '—';
+    });
+    sellPrice.addEventListener('input', () => sellQuoteAmount.dispatchEvent(new Event('input')));
+
+    // create order helpers (these will be the payloads that you later convert to XDR/sign via WalletConnect)
+    function createBuyOrderObj() {
+      const market = marketSelect.value;
+      const { quote, base } = parseMarket(market);
+      return {
+        timestamp: new Date().toISOString(),
+        market,
+        type: 'Buy',
+        buy_total_base: buyBaseTotal.value || '',
+        price_quote_in_base_start: buyPrice.value || '',
+        sell_amount_quote: '', // not applicable
+        offer_id: '' // placeholder: will be set after network create
+      };
+    }
+    function createSellOrderObj() {
+      const market = marketSelect.value;
+      return {
+        timestamp: new Date().toISOString(),
+        market,
+        type: 'Sell',
+        buy_total_base: '', // not applicable
+        price_quote_in_base_start: sellPrice.value || '',
+        sell_amount_quote: sellQuoteAmount.value || '',
+        offer_id: ''
+      };
+    }
+    function createSwapObj() {
+      return {
+        timestamp: new Date().toISOString(),
+        market: swapFrom.value + '->' + swapTo.value,
+        type: 'Swap',
+        buy_total_base: '',
+        price_quote_in_base_start: '',
+        sell_amount_quote: swapAmount.value || '',
+        offer_id: ''
+      };
+    }
+
+    // submission (for Test Project we just log locally; later you will replace this with WalletConnect signing workflow)
+    document.getElementById('buySubmit').addEventListener('click', () => {
+      if (!marketSelect.value) { alert('Select market first'); return; }
+      const obj = createBuyOrderObj();
+      orders.push(obj); renderOrderLog(); alert('Buy order recorded (test-only).');
+    });
+    document.getElementById('sellSubmit').addEventListener('click', () => {
+      if (!marketSelect.value) { alert('Select market first'); return; }
+      const obj = createSellOrderObj();
+      orders.push(obj); renderOrderLog(); alert('Sell order recorded (test-only).');
+    });
+    document.getElementById('swapSubmit').addEventListener('click', () => {
+      if (!swapFrom.value || !swapTo.value) { alert('Select assets for swap'); return; }
+      const obj = createSwapObj();
+      orders.push(obj); renderOrderLog(); alert('Swap recorded (test-only).');
+    });
+
+    // render order log
+    function renderOrderLog() {
+      if (orders.length === 0) {
+        orderLog.innerHTML = '<div class="empty-note">No logged orders yet.</div>';
+        exportRow.classList.add('hidden');
+        return;
+      }
+      exportRow.classList.remove('hidden');
+      orderLog.innerHTML = '';
+      orders.slice().reverse().forEach((o, i) => {
+        const el = document.createElement('div');
+        el.className = 'log-row';
+        el.innerHTML = `
+          <div class="log-left">
+            <div class="mono small">${o.timestamp}</div>
+            <div><strong>${o.type}</strong> — ${o.market}</div>
+          </div>
+          <div class="log-right">
+            <div class="mono">${o.offer_id ? 'offer: ' + o.offer_id : ''}</div>
+          </div>
+        `;
+        orderLog.appendChild(el);
+      });
+    }
+
+    // active offers placeholder (we populate with stored orders for now)
+    function renderActiveOffers() {
+      if (orders.length === 0) {
+        activeOffers.innerHTML = '<div class="empty-note">No active offers yet.</div>';
+        return;
+      }
+      activeOffers.innerHTML = '';
+      orders.forEach(o => {
+        const e = document.createElement('div');
+        e.className = 'offer-row';
+        e.textContent = `${o.type} ${o.market} — ${o.buy_total_base || o.sell_amount_quote || ''}`;
+        activeOffers.appendChild(e);
+      });
+    }
+
+    // import file handling
+    importBtn.addEventListener('click', () => importFile.click());
+    importFile.addEventListener('change', async (ev) => {
+      const f = ev.target.files[0];
+      if (!f) return;
+      try {
+        const txt = await f.text();
+        const j = JSON.parse(txt);
+        if (Array.isArray(j)) {
+          // assume it's an array of orders
+          orders.length = 0;
+          j.forEach(it => orders.push(it));
+        } else if (j?.celldata) {
+          alert('Imported sheet JSON - use the Test BaseQuote or Universal Asset JSON files under /data for markets/assets.');
+        } else {
+          alert('Imported JSON added to order log (test).');
+          orders.push(j);
+        }
+        renderOrderLog(); renderActiveOffers();
+      } catch (err) {
+        alert('Could not parse JSON: ' + err.message);
+      } finally {
+        importFile.value = ''; // reset
+      }
+    });
+
+    // export JSON
+    exportJsonBtn.addEventListener('click', () => {
+      const blob = new Blob([JSON.stringify(orders, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'portalx-test-orders.json';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    });
+
+    // export XLSX using SheetJS: converts orders array to simple sheet
+    exportXlsxBtn.addEventListener('click', () => {
+      if (typeof XLSX === 'undefined') {
+        alert('XLSX library not loaded. Ensure internet/CDN available.');
+        return;
+      }
+      const ws = XLSX.utils.json_to_sheet(orders);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'orders');
+      XLSX.writeFile(wb, 'portalx-test-orders.xlsx');
+    });
+
+    // Update offers (placeholder to call Horizon)
+    document.getElementById('updateOffersBtn').addEventListener('click', () => {
+      // Placeholder: later replace with fetch to Lobstr Horizon endpoint for account offers
+      alert('Update Offers: not yet implemented. Later this will query Horizon / Lobstr for current offers.');
+    });
+
+    // Wallet connect
+    walletBtn.addEventListener('click', async () => {
+      // If StellarWalletsKit is present (from StellarWalletsKit script initialized in your portalx-lite-test), call authModal
+      try {
+        if (window.StellarWalletsKit && typeof window.StellarWalletsKit.authModal === 'function') {
+          const { address } = await window.StellarWalletsKit.authModal();
+          alert('Connected: ' + address);
+          // store or display connected address
+        } else {
+          // Fallback
+          alert('Wallet connector not available in this test build. Deploy the StellarWalletsKit initialization or use GitHub Pages hosted kit.');
+        }
+      } catch (err) {
+        console.error('Wallet connect error', err);
+        alert('Wallet connect failed: ' + (err?.message || err));
+      }
+    });
+
+    // bootstrap
+    (async function init(){
+      await loadMarkets();
+      await loadAssets();
+      renderOrderLog();
+      renderActiveOffers();
+    })();
+
+  </script>
 </body>
 </html>
