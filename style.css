@@ -41,8 +41,8 @@ body{background:var(--page-bg); color:#111; -webkit-font-smoothing:antialiased; 
   flex:1;
 }
 .px-portal{ color:var(--purple); font-size:18px; }
-.px-x{ color:var(--gold); font-size:20px; font-weight:800; margin-left:2px; margin-right:2px; }
-.px-lite{ color:var(--muted); font-size:14px; }
+.px-x{ color:var(--gold); font-size:18px; font-weight:800; margin-left:0px; margin-right:2px; }
+.px-lite{ color:var(--purple); font-size:18px; }
 
 /* separator gold line */
 .separator{
